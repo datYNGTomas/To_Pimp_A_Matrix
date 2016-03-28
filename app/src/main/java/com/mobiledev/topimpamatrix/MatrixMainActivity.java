@@ -18,6 +18,7 @@ import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MatrixMainActivity extends AppCompatActivity {
 
@@ -29,6 +30,7 @@ public class MatrixMainActivity extends AppCompatActivity {
     public static final int SELECT_PICTURE = 1;
     private static final int TAKE_PICTURE = 2;
     private String mImageFullPathAndName = "";
+    private Intent intent;
 
     @Bind(R.id.activity_main_camera_button)
     Button mCameraButton;
@@ -39,14 +41,20 @@ public class MatrixMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_matrix_main);
 
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
 
         ButterKnife.bind(this);
 
-        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+//        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
 
+    }
+
+
+    @OnClick(R.id.activity_main_camera_button)
+    public void cameraButtonClicked() {
+        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
     /**
