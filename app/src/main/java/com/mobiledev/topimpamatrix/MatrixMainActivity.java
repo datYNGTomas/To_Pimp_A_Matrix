@@ -145,11 +145,6 @@ public class MatrixMainActivity extends AppCompatActivity {
         startActivityForResult(intent, SELECT_PICTURE);
     }
 
-    public void DoTakePhoto(View view) {
-        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-        startActivityForResult(intent, TAKE_PICTURE);
-    }
-
     // Resize an image
     public Bitmap rescaleBitmap(Bitmap bm, int newWidth, int newHeight) {
         int w = bm.getWidth();
