@@ -36,11 +36,6 @@ public class MatrixMainActivity extends AppCompatActivity {
     private static final int TAKE_PICTURE = 2;
     private String mImageFullPathAndName = "";
     private Intent intent;
-    private CameraResultListener mListener;
-
-    public interface CameraResultListener {
-        void OnCameraResult(Intent intent);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
