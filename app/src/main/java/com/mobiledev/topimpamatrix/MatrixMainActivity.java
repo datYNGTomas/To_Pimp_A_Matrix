@@ -1,7 +1,8 @@
 package com.mobiledev.topimpamatrix;
 
 import android.content.Intent;
-import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -9,9 +10,11 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -24,6 +27,8 @@ public class MatrixMainActivity extends AppCompatActivity {
 
     private final String apiKey = "4571bd58-9662-4d0d-9dfa-23f0479db860";
 
+    public static final String TAG = MatrixMainActivity.class.getSimpleName();
+
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Uri fileUri;
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -31,10 +36,11 @@ public class MatrixMainActivity extends AppCompatActivity {
     private static final int TAKE_PICTURE = 2;
     private String mImageFullPathAndName = "";
     private Intent intent;
+    private CameraResultListener mListener;
 
-    @Bind(R.id.activity_main_camera_button)
-    Button mCameraButton;
-
+    public interface CameraResultListener {
+        void OnCameraResult(Intent intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,14 +53,55 @@ public class MatrixMainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-//        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-
     }
+
+    @Bind(R.id.activity_main_camera_image)
+    ImageView mCameraImage;
 
 
     @OnClick(R.id.activity_main_camera_button)
     public void cameraButtonClicked() {
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+            /*if (resultCode == RESULT_OK && null != data) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                Cursor cursor = getContentResolver().query(selectedImage,
+                        filePathColumn, null, null, null);
+                assert cursor != null;
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                // get the selected image full path and name
+                mImageFullPathAndName = cursor.getString(columnIndex);
+                cursor.close();
+
+                Bundle extras = data.getExtras();
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+                mCameraImage.setImageBitmap(imageBitmap);
+
+            }*/
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), fileUri);
+                mCameraImage.setImageBitmap(bitmap);
+
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                mediaScanIntent.setData(fileUri);
+                this.sendBroadcast(mediaScanIntent);
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                Log.e(TAG, "File Not Found");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                Log.e(TAG, "Exception");
+            }
+        }
     }
 
     /**
@@ -102,28 +149,27 @@ public class MatrixMainActivity extends AppCompatActivity {
         startActivityForResult(intent, SELECT_PICTURE);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == SELECT_PICTURE) {
-            if (resultCode == RESULT_OK && null != data) {
-                Uri selectedImage = data.getData();
-                String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                Cursor cursor = getContentResolver().query(selectedImage,
-                        filePathColumn, null, null, null);
-                assert cursor != null;
-                cursor.moveToFirst();
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                // get the selected image full path and name
-                mImageFullPathAndName = cursor.getString(columnIndex);
-                cursor.close();
-            }
-        }
-    }
-
     public void DoTakePhoto(View view) {
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         startActivityForResult(intent, TAKE_PICTURE);
+    }
+
+    // Resize an image
+    public Bitmap rescaleBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int w = bm.getWidth();
+        int h = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / w;
+        float scaleHeight = ((float) newHeight) / h;
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        return Bitmap.createBitmap(bm, 0, 0, w, h, matrix, false);
+    }
+
+    // Rotate an image
+    private Bitmap rotateBitmap(Bitmap pic, int deg) {
+        // Create two matrices that will be used to rotate the bitmap
+        Matrix rotate90DegAntiClock = new Matrix();
+        rotate90DegAntiClock.preRotate(deg);
+        return Bitmap.createBitmap(pic, 0, 0, pic.getWidth(), pic.getHeight(), rotate90DegAntiClock, true);
     }
 }
