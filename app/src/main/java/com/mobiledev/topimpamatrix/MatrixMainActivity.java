@@ -84,7 +84,8 @@ public class MatrixMainActivity extends AppCompatActivity {
 
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), fileUri);
-                mCameraImage.setImageBitmap(bitmap);
+                bitmap = rescaleBitmap(bitmap, 600, 600);
+                mCameraImage.setImageBitmap(rotateBitmap(bitmap, 90));
 
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 mediaScanIntent.setData(fileUri);
