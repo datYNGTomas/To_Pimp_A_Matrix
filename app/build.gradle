@@ -25,5 +25,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.0.0-alpha1'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'org.immutables:gson:2.1.15'
-    compile 'me.neavo:volley:2014.12.09'
+    compile 'com.squareup.retrofit2:retrofit:2.0.2'
 }

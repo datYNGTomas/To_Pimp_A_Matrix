@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,6 +23,14 @@ import java.util.Locale;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 
 public class MatrixMainActivity extends AppCompatActivity {
 
@@ -53,6 +62,9 @@ public class MatrixMainActivity extends AppCompatActivity {
     @Bind(R.id.activity_main_camera_image)
     ImageView mCameraImage;
 
+    @Bind(R.id.activity_main_digital_matrix)
+    TextView mDigitalMatrix;
+
 
     @OnClick(R.id.activity_main_camera_button)
     public void cameraButtonClicked() {
@@ -81,6 +93,34 @@ public class MatrixMainActivity extends AppCompatActivity {
                 mCameraImage.setImageBitmap(imageBitmap);
 
             }*/
+
+            String url = "https://api.idolondemand.com/";
+
+            Retrofit retrofit = new Retrofit.Builder().baseUrl(url).build();
+            OCRService ocrService = retrofit.create(OCRService.class);
+            RequestBody apikeyRequestBody = RequestBody.create(MediaType.parse("text/plain"), apiKey);
+            RequestBody modeRequestBody = RequestBody.create(MediaType.parse("text/plain"), "document_photo");
+            File imageFile = new File(fileUri.getPath());
+            RequestBody fileRequestBody = RequestBody.create(MediaType.parse("image/jpeg"), imageFile);
+            Call<ResponseBody> call = ocrService.postMatrix(apikeyRequestBody, fileRequestBody, modeRequestBody);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    Log.d(TAG, "DONE!");
+                    try {
+                        Log.d(TAG, response.body().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Log.e(TAG, "You fucked up, son", t);
+
+                }
+            });
 
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), fileUri);
